@@ -1,0 +1,48 @@
+---
+name: Packer Build on Push to main
+
+# Controls when the action will run.
+# Triggers the workflow on push or pull request events but only for the main branch
+on:
+  # Workflow is triggered on pull requests
+  push:
+    # Workflow will only be triggered for pull requests on "master" branch
+    branches: [ main ]
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a single job called "build"
+  build_ami_artifact:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+    # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+    - name: Checkout Repository
+      uses: actions/checkout@v2
+
+    - name: Install packer
+      run: |
+        curl -fsSL https://apt.releases.hashicorp.com/gpg | sudo apt-key add -
+        sudo apt-add-repository "deb [arch=amd64] https://apt.releases.hashicorp.com $(lsb_release -cs) main"
+        sudo apt-get update && sudo apt-get install packer
+    
+    - name: build ami artifact
+      run: |
+        packer build \
+          -var 'aws_region=us-east-1' \
+          -var 'aws_access_key=${{ secrets.AWS_ACCESS_KEY }}' \
+          -var 'aws_secret_key=${{ secrets.AWS_SECRET_KEY }}' \
+          -var 'subnet_id=subnet-0a484ae8f682b46de' \
+          -var 'source_ami=ami-03d315ad33b9d49c4'\
+          -var 'prod_account_id=${{ secrets.AWS_PROD_ID }}'\
+          ami.json
+      env:
+        AWS_REGION : us-east-1
+        SUBNET_ID : subnet-0a484ae8f682b46de
+        SOURCE_AMI : ami-03d315ad33b9d49c4
+        PROD_ID: ${{ secrets.AWS_PROD_ID }}
+        AWS_SECRET: ${{ secrets.AWS_SECRET_KEY }}
+        AWS_ACCESS: ${{ secrets.AWS_ACCESS_KEY }}
+    

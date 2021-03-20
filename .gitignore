@@ -1,0 +1,8 @@
+# Cache objects
+packer_cache/
+/packer/vars.json
+# Crash log
+crash.log
+
+# For built boxes
+*.box
