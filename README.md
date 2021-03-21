@@ -13,3 +13,4 @@ The AMI should include everything needed to run your application.
 ```bash
 ./buildAmi.sh
 ```
+test1
